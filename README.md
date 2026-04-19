@@ -48,19 +48,21 @@ This app:
 ---
 
 ## 📸 Demo
-(Add screenshot here)
+![Dashboard](assets/dashboard.png)
+![Result](assets/result.png)
+![Download](assets/download.png)
 
 ---
 
 ## 🔗 Live App
-👉 https://your-streamlit-link
+👉 https://ai-student-exam-assistant.streamlit.app/
 
 ---
 
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/your-repo
+git clone https://github.com/maruthisaiteja/ai-student-exam-assistant
 cd ai-student-exam-assistant
 pip install -r requirements.txt
 streamlit run app.py
