@@ -23,6 +23,7 @@ st.write("Fill your details and get a personalized study plan!")
 exam_days = st.slider("📅 Days left for exam", 1, 30, 5)
 study_hours = st.slider("⏳ Hours you can study daily", 1, 12, 4)
 subject = st.text_input("📘 Subject / Exam Name")
+mode = st.radio("🎯 Select Study Mode", ["Normal", "Last-Minute"])
 level = st.selectbox("📊 Your preparation level", ["Beginner", "Intermediate", "Advanced"])
 
 # ⚠️ Smart Warning
@@ -31,17 +32,19 @@ if exam_days <= 3:
 
 
 # 🧠 LOGIC FUNCTION
-def get_strategy(days):
-    if days <= 3:
-        return "Crash Preparation (focus only on important topics)"
+def get_strategy(days, mode):
+    if mode == "Last-Minute":
+        return "Emergency Strategy (focus only on high-priority topics and revision)"
+    elif days <= 3:
+        return "Crash Preparation"
     elif days <= 7:
-        return "Focused Revision Strategy"
+        return "Focused Revision"
     else:
         return "Balanced Study Plan"
 
 # 🧠 PROMPT GENERATION
 def generate_prompt():
-    strategy = get_strategy(exam_days)
+    strategy = get_strategy(exam_days, mode)
 
     prompt = f"""
     You are an expert academic mentor.
