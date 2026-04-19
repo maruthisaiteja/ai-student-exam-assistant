@@ -29,6 +29,7 @@ level = st.selectbox("📊 Your preparation level", ["Beginner", "Intermediate",
 if exam_days <= 3:
     st.error("⚠️ Very less time! Focus only on high-priority topics.")
 
+
 # 🧠 LOGIC FUNCTION
 def get_strategy(days):
     if days <= 3:
@@ -101,3 +102,9 @@ st.write("""
 - Practice previous year papers
 - Avoid distractions during study time
 """)
+
+try:
+    response = model.generate_content(prompt)
+    output = response.text
+except Exception as e:
+    st.error("Something went wrong. Please try again.")
