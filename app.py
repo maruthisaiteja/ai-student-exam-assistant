@@ -79,21 +79,24 @@ if st.button("🚀 Generate Study Plan"):
         with st.spinner("Generating your smart study plan..."):
             time.sleep(2)
 
-            prompt = generate_prompt()
-            response = model.generate_content(prompt)
+            try:
+                prompt = generate_prompt()
+                response = model.generate_content(prompt)
+                output = response.text
 
-            output = response.text
+                # 📊 OUTPUT SECTION
+                st.success("✅ Your Personalized Study Plan")
+                st.markdown(output)
 
-            # 📊 OUTPUT SECTION
-            st.success("✅ Your Personalized Study Plan")
-            st.markdown(output)
+                # 📥 DOWNLOAD BUTTON
+                st.download_button(
+                    label="📥 Download Study Plan",
+                    data=output,
+                    file_name="study_plan.txt"
+                )
 
-            # 📥 DOWNLOAD BUTTON
-            st.download_button(
-                label="📥 Download Study Plan",
-                data=output,
-                file_name="study_plan.txt"
-            )
+            except Exception as e:
+                st.error(f"⚠️ Error: {e}")
 
 # ⚡ EXTRA SECTION
 st.markdown("---")
@@ -105,9 +108,3 @@ st.write("""
 - Practice previous year papers
 - Avoid distractions during study time
 """)
-
-try:
-    response = model.generate_content(prompt)
-    output = response.text
-except Exception as e:
-    st.error("Something went wrong. Please try again.")
