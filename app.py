@@ -1,9 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 import time
+import os
+
 
 # 🔑 Configure Gemini API
-genai.configure(api_key="AIzaSyDlhVNfYq53gk80Au7lgUQiD6YTg-mUVwo")
+genai.configure(api_key="GEMINI_API_KEY")
 
 model = genai.GenerativeModel("models/gemini-flash-latest")
 
