@@ -57,6 +57,20 @@ User Input → Strategy Engine → Prompt Generator → Gemini API → Response 
 
 ---
 
+## ♿ Accessibility
+
+This application is designed with user accessibility in mind:
+
+- Clear labels and instructions for all inputs
+- Help tooltips for better understanding
+- Simple and clean UI using Streamlit
+- Error messages designed for non-technical users
+- Visual indicators like progress bars for guidance
+
+The app ensures usability for beginners and non-technical users.
+
+---
+
 ## ⚙️ How It Works
 
 1. User enters:

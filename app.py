@@ -15,16 +15,50 @@ st.set_page_config(page_title="AI Exam Assistant", layout="centered")
 st.markdown("""
 # 🎯 AI Student Exam Assistant  
 ### Plan smarter. Study better. Score higher.
+
+👋 This tool helps students generate a **personalized study plan** based on their preparation level and time available.
+
+👉 Fill the details below and click *Generate Study Plan*
 """)
 
 st.write("Fill your details and get a personalized study plan!")
 
+st.markdown("---")
+
 # 🧾 INPUT SECTION (UPGRADED UI)
-exam_days = st.slider("📅 Days left for exam", 1, 30, 5)
-study_hours = st.slider("⏳ Hours you can study daily", 1, 12, 4)
-subject = st.text_input("📘 Subject / Exam Name")
-mode = st.radio("🎯 Select Study Mode", ["Normal", "Last-Minute"])
-level = st.selectbox("📊 Your preparation level", ["Beginner", "Intermediate", "Advanced"])
+exam_days = st.slider(
+    "📅 Days left for exam",
+    1, 30, 5,
+    help="Select how many days you have before your exam"
+)
+
+study_hours = st.slider(
+    "⏳ Hours you can study daily",
+    1, 12, 4,
+    help="Select how many hours you can realistically study per day"
+)
+
+subject = st.text_input(
+    "📘 Subject / Exam Name",
+    help="Enter your subject (e.g., Data Structures, Indian Constitution)"
+)
+
+mode = st.radio(
+    "🎯 Select Study Mode",
+    ["Normal", "Last-Minute"],
+    help="Choose Last-Minute if exam is very near"
+)
+
+level = st.selectbox(
+    "📊 Your preparation level",
+    ["Beginner", "Intermediate", "Advanced"],
+    help="Select your current level of preparation"
+)
+
+progress = (30 - exam_days) / 30
+st.progress(progress)
+
+st.caption("📊 Your preparation urgency level")
 
 # ⚠️ Smart Warning
 if exam_days <= 3:
@@ -70,6 +104,8 @@ def generate_prompt():
 
     return prompt
 
+st.markdown("---")
+
 # 🚀 GENERATE BUTTON
 if st.button("🚀 Generate Study Plan"):
 
@@ -96,7 +132,7 @@ if st.button("🚀 Generate Study Plan"):
                 )
 
             except Exception as e:
-                st.error(f"⚠️ Error: {e}")
+                st.error("⚠️ Unable to generate study plan. Please try again later.")
 
 # ⚡ EXTRA SECTION
 st.markdown("---")
