@@ -110,6 +110,25 @@ Level: {level}
 Keep them exam-focused and concise.
 """
 
+def analyze_student():
+    analysis_prompt = f"""
+    Analyze this student's exam situation:
+
+    Subject: {subject}
+    Days Left: {exam_days}
+    Study Hours: {study_hours}
+    Level: {level}
+
+    Give:
+    - Difficulty Level (Easy/Medium/Hard)
+    - Urgency Level (Low/Moderate/High)
+    - Risk Level (Low/Medium/High)
+    - Recommended Strategy
+    """
+
+    return get_ai_response(analysis_prompt)
+
+
 # ⚡ CACHE
 @st.cache_data
 def get_ai_response(prompt):
@@ -126,13 +145,30 @@ if st.button("🚀 Generate Study Plan"):
             try:
                 start = time.time()
 
-                prompt = generate_prompt()
+                # 🔥 STEP 1: AI ANALYSIS
+                analysis = analyze_student()
+
+                st.markdown("### 📊 AI Analysis")
+                st.markdown(analysis)
+
+                # 🔥 RISK VISUAL FEEDBACK
+                if "High" in analysis:
+                    st.error("⚠️ High Risk Detected - Focus Required")
+                elif "Medium" in analysis:
+                    st.warning("⚡ Moderate Risk - Stay Consistent")
+                else:
+                    st.success("✅ Low Risk - You're on track!")
+
+                # 🔥 STEP 2: GENERATE PLAN
+                prompt = generate_prompt() + f"\n\nUse this analysis:\n{analysis}"
                 output = get_ai_response(prompt)
 
                 end = time.time()
 
                 st.success("✅ Study Plan Ready")
                 st.markdown(output)
+                st.markdown("### 🚀 AI Insight")
+                st.write("This plan is dynamically optimized using multi-step AI reasoning.")
 
                 # 🧠 SAVE HISTORY (NEW)
                 st.session_state.history.append({

@@ -177,7 +177,24 @@ This project follows best practices for secure development:
 - Input validation prevents misuse or unexpected input
 - Error handling avoids exposing internal system details
 
-These practices ensure safe and secure usage of the application.
+> Built with security-first approach using environment-based configuration.
+
+---
+
+## 🧠 Advanced AI Pipeline
+
+This system uses a multi-step AI reasoning approach:
+
+1. **Situation Analysis**
+   - Evaluates difficulty, urgency, and risk
+
+2. **Strategy Selection**
+   - AI determines best preparation approach
+
+3. **Plan Generation**
+   - Creates optimized study plan using insights
+
+This makes the system more intelligent than traditional single-prompt solutions.
 
 ---
 
