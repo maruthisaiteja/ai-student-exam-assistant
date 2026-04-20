@@ -5,7 +5,13 @@ import os
 
 
 # 🔑 Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("⚠️ API key not found. Please configure it in Streamlit secrets.")
+    st.stop()
+
+genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel("models/gemini-flash-latest")
 
@@ -131,8 +137,11 @@ def get_ai_response(prompt):
 # 🚀 GENERATE BUTTON
 if st.button("🚀 Generate Study Plan"):
 
-    if subject.strip() == "":
-        st.warning("Please enter subject name!")
+    if subject.strip() == "" or len(subject) < 3:
+        st.warning("Please enter a valid subject name (min 3 characters)")
+    if len(subject) > 50:
+        st.warning("Subject name too long. Please shorten it.")
+        st.stop()
     else:
         with st.spinner("⚡ Generating optimized study plan..."):
 

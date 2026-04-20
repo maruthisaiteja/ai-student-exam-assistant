@@ -168,6 +168,19 @@ This ensures faster and resource-efficient execution.
 
 ---
 
+## 🔐 Security
+
+This project follows best practices for secure development:
+
+- API keys are stored using environment variables (not hardcoded)
+- Sensitive data is excluded using `.gitignore`
+- Input validation prevents misuse or unexpected input
+- Error handling avoids exposing internal system details
+
+These practices ensure safe and secure usage of the application.
+
+---
+
 ## 🚀 Unique Value Proposition
 
 Unlike generic AI tools, this project:
