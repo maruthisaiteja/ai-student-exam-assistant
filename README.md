@@ -99,6 +99,23 @@ The app ensures usability for beginners and non-technical users.
 
 ---
 
+## ☁️ Google Services Integration
+
+This project leverages Google Gemini AI for intelligent study planning.
+
+Key usage includes:
+- Context-aware prompt engineering
+- Dynamic plan generation based on user input
+- AI-driven prioritization of topics
+- Adaptive strategies (Normal vs Last-Minute mode)
+
+### 🤖 AI Capabilities
+- Reasoning-based study planning
+- Context-aware decision making
+- Adaptive output generation
+
+---
+
 ## 🧪 Testing
 
 This project includes unit testing using pytest.

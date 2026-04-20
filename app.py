@@ -23,6 +23,7 @@ st.markdown("""
 """)
 
 st.write("Fill your details and get a personalized study plan!")
+st.info("⚡ Powered by Google Gemini AI for intelligent study planning")
 
 # 🧾 INPUT SECTION (UPGRADED UI)
 exam_days = st.slider(
@@ -81,27 +82,29 @@ def generate_prompt():
     strategy = get_strategy(exam_days, mode)
 
     prompt = f"""
-    You are an efficient AI academic mentor powered by Google Gemini.
+    You are an intelligent academic assistant powered by Google Gemini AI.
 
-    Generate concise and optimized output.
+    Your task is to analyze the student's situation and generate a highly personalized study plan.
 
     Student Details:
     - Subject: {subject}
     - Days left: {exam_days}
-    - Study hours/day: {study_hours}
-    - Level: {level}
+    - Daily study hours: {study_hours}
+    - Preparation level: {level}
     - Strategy: {strategy}
+    - Mode: {mode}
 
-    Requirements:
-    - Keep response structured but not too long
-    - Focus on important topics only
-    - Avoid unnecessary explanations
+    Instructions:
+    - Use reasoning to prioritize important topics
+    - Adapt based on time constraints
+    - If Last-Minute mode → focus only on high-impact topics
+    - Provide concise and structured output
 
-    Output:
-    1. Day-wise plan
-    2. Priority topics
-    3. Smart tips
-    4. Motivation
+    Output Format:
+    1. 📅 Day-wise Study Plan
+    2. 🎯 Priority Topics
+    3. 🧠 Smart Study Tips
+    4. 💡 Motivation Message
     """
 
     return prompt
@@ -136,6 +139,16 @@ if st.button("🚀 Generate Study Plan"):
                 # 📊 OUTPUT
                 st.success("✅ Your Personalized Study Plan")
                 st.markdown(output)
+                
+                st.markdown("### 🤖 How AI Generated This Plan")
+                st.write("""
+                This plan is generated using Google Gemini AI by analyzing:
+                - Time constraints
+                - Study capacity
+                - Preparation level
+
+                The AI dynamically prioritizes topics to maximize exam performance.
+                """)
 
                 # ⚡ SHOW PERFORMANCE
                 st.caption(f"⚡ Generated in {round(end_time - start_time, 2)} seconds")
