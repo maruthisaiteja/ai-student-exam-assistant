@@ -1,10 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
-import time
 import os
+import time
 
-
-# 🔑 Configure Gemini API
+# 🔐 API CONFIG
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
@@ -12,231 +11,163 @@ if not api_key:
     st.stop()
 
 genai.configure(api_key=api_key)
-
 model = genai.GenerativeModel("models/gemini-flash-latest")
 
-# 🎨 Page Config
+# 🎨 PAGE CONFIG
 st.set_page_config(page_title="AI Exam Assistant", layout="centered")
 
-# 🎯 Header
+# 🌟 PREMIUM HEADER
 st.markdown("""
 # 🎯 AI Student Exam Assistant  
-### Plan smarter. Study better. Score higher.
+### 🚀 Plan smarter. Study better. Score higher.
 
-👋 This tool helps students generate a **personalized study plan** based on their preparation level and time available.
-
-👉 Fill the details below and click *Generate Study Plan*
+💡 Powered by **Google Gemini AI**
 """)
 
+st.info("⚡ AI-powered personalized study planning")
+
+# 🎯 PROBLEM + SOLUTION
 st.markdown("""
 ### 🎯 Problem
-
-Many students struggle with:
-- ❌ Lack of structured study plans  
-- ❌ Poor time management before exams  
-- ❌ Not knowing what topics to prioritize  
+Students struggle with:
+- Lack of planning  
+- Poor time management  
+- Confusion about important topics  
 
 ### ✅ Solution
-
-This AI assistant analyzes your situation and generates a **personalized, time-optimized study plan** to help you focus on what matters most.
+This AI tool creates **personalized study strategies** based on your time, level, and subject.
 """)
-st.info("⚡ Powered by Google Gemini AI for intelligent study planning")
 
-# 🧾 INPUT SECTION (UPGRADED UI)
-exam_days = st.slider(
-    "📅 Days left for exam",
-    1, 30, 5,
-    help="Select how many days you have before your exam"
-)
+st.markdown("---")
 
-study_hours = st.slider(
-    "⏳ Hours you can study daily",
-    1, 12, 4,
-    help="Select how many hours you can realistically study per day"
-)
+# 🧾 INPUT SECTION
+exam_days = st.slider("📅 Days left for exam", 1, 30, 5)
+study_hours = st.slider("⏳ Study hours/day", 1, 12, 4)
 
-subject = st.text_input(
-    "📘 Subject / Exam Name",
-    help="Enter your subject (e.g., Data Structures, Indian Constitution)"
-)
+subject = st.text_input("📘 Subject Name")
 
-mode = st.radio(
-    "🎯 Select Study Mode",
-    ["Normal", "Last-Minute"],
-    help="Choose Last-Minute if exam is very near"
-)
+mode = st.radio("🎯 Study Mode", ["Normal", "Last-Minute"])
+level = st.selectbox("📊 Preparation Level", ["Beginner", "Intermediate", "Advanced"])
 
-level = st.selectbox(
-    "📊 Your preparation level",
-    ["Beginner", "Intermediate", "Advanced"],
-    help="Select your current level of preparation"
-)
-
-# 📊 Progress Indicator
+# 📊 PROGRESS BAR
 progress = (30 - exam_days) / 30
 st.progress(progress)
+st.caption("📊 Exam urgency level")
 
-st.caption("📊 Your preparation urgency level")
-
-# ⚠️ Smart Warning
+# ⚠️ WARNING
 if exam_days <= 3:
-    st.error("⚠️ Very less time! Focus only on high-priority topics.")
+    st.warning("⚡ Last-minute preparation detected!")
 
+st.markdown("---")
 
-# 🧠 LOGIC FUNCTION
+# 🧠 LOGIC
 def get_strategy(days, mode):
     if mode == "Last-Minute":
-        return "Emergency Strategy (focus only on high-priority topics and revision)"
+        return "Emergency Strategy"
     elif days <= 3:
         return "Crash Preparation"
     elif days <= 7:
         return "Focused Revision"
     else:
-        return "Balanced Study Plan"
+        return "Balanced Study"
 
-# 🧠 PROMPT GENERATION
+# 🧠 PROMPT
 def generate_prompt():
     strategy = get_strategy(exam_days, mode)
 
-    prompt = f"""
-    You are an intelligent academic assistant powered by Google Gemini AI.
+    return f"""
+You are an AI academic mentor powered by Google Gemini.
 
-    Your task is to analyze the student's situation and generate a highly personalized study plan.
+Student:
+Subject: {subject}
+Days Left: {exam_days}
+Study Hours: {study_hours}
+Level: {level}
+Strategy: {strategy}
 
-    Student Details:
-    - Subject: {subject}
-    - Days left: {exam_days}
-    - Daily study hours: {study_hours}
-    - Preparation level: {level}
-    - Strategy: {strategy}
-    - Mode: {mode}
+Generate:
+1. Day-wise plan
+2. Important topics
+3. Study tips
+4. Motivation
+"""
 
-    Instructions:
-    - Use reasoning to prioritize important topics
-    - Adapt based on time constraints
-    - If Last-Minute mode → focus only on high-impact topics
-    - Provide concise and structured output
-
-    Output Format:
-    1. 📅 Day-wise Study Plan
-    2. 🎯 Priority Topics
-    3. 🧠 Smart Study Tips
-    4. 💡 Motivation Message
-    """
-
-    return prompt
-
+# 🧠 QUIZ PROMPT
 def generate_quiz_prompt():
     return f"""
-    You are an AI tutor powered by Google Gemini.
+Generate 5 important exam questions for:
 
-    Generate 5 important practice questions for:
-    Subject: {subject}
-    Level: {level}
+Subject: {subject}
+Level: {level}
 
-    Requirements:
-    - Questions should be exam-focused
-    - Mix of conceptual and problem-solving
-    - Keep them clear and concise
-    """
+Keep them exam-focused and concise.
+"""
 
-
-# 🚀🔥 ADD THIS BLOCK (VERY IMPORTANT FOR EFFICIENCY)
-@st.cache_data(show_spinner=False)
+# ⚡ CACHED RESPONSE
+@st.cache_data
 def get_ai_response(prompt):
     response = model.generate_content(prompt)
     return response.text
 
-
-# 🚀 GENERATE BUTTON
+# 🎯 MAIN BUTTON
 if st.button("🚀 Generate Study Plan"):
 
-    if subject.strip() == "" or len(subject) < 3:
-        st.warning("Please enter a valid subject name (min 3 characters)")
-    if len(subject) > 50:
-        st.warning("Subject name too long. Please shorten it.")
-        st.stop()
+    if not subject or len(subject) < 3:
+        st.warning("Enter valid subject name")
     else:
-        with st.spinner("⚡ Generating optimized study plan..."):
-
+        with st.spinner("⚡ Generating plan..."):
             try:
+                start = time.time()
+
                 prompt = generate_prompt()
-
-                # ⏱️ TIME TRACKING (EFFICIENCY BOOST)
-                start_time = time.time()
-
-                # 🔥 USE CACHED FUNCTION (NOT DIRECT CALL)
                 output = get_ai_response(prompt)
 
-                end_time = time.time()
+                end = time.time()
 
-                # 📊 OUTPUT
-                st.success("✅ Your Personalized Study Plan")
+                st.success("✅ Study Plan Ready")
                 st.markdown(output)
 
-                st.markdown("### 🎯 Why This Plan Works")
-                st.write("""
-                This plan is designed to maximize your efficiency by:
-                - Prioritizing high-impact topics
-                - Adapting to your available time
-                - Aligning with your preparation level
+                st.markdown("### 🎯 Why This Works")
+                st.write("Focused, time-optimized, and AI-personalized.")
 
-                It ensures you focus on what matters most for scoring better in exams.
-                """)
+                st.markdown("### 🤖 AI Logic")
+                st.write("Generated using Google Gemini AI with context-aware reasoning.")
 
-                st.markdown("### 🤖 How AI Generated This Plan")
-                st.write("""
-                This plan is generated using Google Gemini AI by analyzing:
-                - Time constraints
-                - Study capacity
-                - Preparation level
+                st.caption(f"⚡ Generated in {round(end-start,2)} sec")
 
-                The AI dynamically prioritizes topics to maximize exam performance.
-                """)
+                st.download_button("📥 Download Plan", output)
 
-                # ⚡ SHOW PERFORMANCE
-                st.caption(f"⚡ Generated in {round(end_time - start_time, 2)} seconds")
+            except:
+                st.error("Something went wrong")
 
-                # 📥 DOWNLOAD
-                st.download_button(
-                    label="📥 Download Study Plan",
-                    data=output,
-                    file_name="study_plan.txt"
-                )
+# 🧠 QUIZ FEATURE
+st.markdown("---")
+st.markdown("## 🧠 Practice Questions")
 
-            except Exception as e:
-                st.error("⚠️ Unable to generate study plan. Please try again later.")
+generate_quiz = st.button("📝 Generate Questions")
 
 if generate_quiz:
-
-    if subject.strip() == "":
-        st.warning("Please enter subject name first!")
+    if not subject:
+        st.warning("Enter subject first")
     else:
-        with st.spinner("🧠 Generating practice questions..."):
+        with st.spinner("Generating questions..."):
             try:
                 quiz_prompt = generate_quiz_prompt()
                 quiz_output = get_ai_response(quiz_prompt)
 
-                st.markdown("### 📝 Practice Questions")
-                st.info("💡 Practice these questions to test your understanding")
+                st.info("💡 Practice these questions")
                 st.markdown(quiz_output)
 
-            except Exception:
-                st.error("⚠️ Unable to generate questions. Please try again.")
+            except:
+                st.error("Error generating questions")
 
-
-# ⚡ EXTRA SECTION
+# ⚡ EXTRA TIPS
 st.markdown("---")
-st.markdown("## ⚡ Quick Study Tips")
-
-st.markdown("---")
-st.markdown("## 🧠 Practice Questions")
-
-generate_quiz = st.button("📝 Generate Practice Questions")
+st.markdown("## ⚡ Study Tips")
 
 st.write("""
-- Use Pomodoro technique (25 min focus + 5 min break)
-- Revise before sleeping for better memory
-- Practice previous year papers
-- Avoid distractions during study time
+- Use Pomodoro technique  
+- Revise before sleeping  
+- Solve previous papers  
+- Avoid distractions  
 """)
