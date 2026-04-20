@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import time
+import random
 
 # 🔐 API CONFIG
 api_key = os.getenv("GEMINI_API_KEY")
@@ -16,7 +17,11 @@ model = genai.GenerativeModel("models/gemini-flash-latest")
 # 🎨 PAGE CONFIG
 st.set_page_config(page_title="AI Exam Assistant", layout="centered")
 
-# 🌟 PREMIUM HEADER
+# 🧠 SESSION MEMORY (NEW)
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# 🌟 HEADER
 st.markdown("""
 # 🎯 AI Student Exam Assistant  
 ### 🚀 Plan smarter. Study better. Score higher.
@@ -40,27 +45,28 @@ This AI tool creates **personalized study strategies** based on your time, level
 
 st.markdown("---")
 
-# 🧾 INPUT SECTION
+# 🧾 INPUT
 exam_days = st.slider("📅 Days left for exam", 1, 30, 5)
 study_hours = st.slider("⏳ Study hours/day", 1, 12, 4)
-
 subject = st.text_input("📘 Subject Name")
-
 mode = st.radio("🎯 Study Mode", ["Normal", "Last-Minute"])
 level = st.selectbox("📊 Preparation Level", ["Beginner", "Intermediate", "Advanced"])
 
-# 📊 PROGRESS BAR
+# 🚨 EMERGENCY MODE UI (NEW)
+if mode == "Last-Minute":
+    st.error("🚨 Emergency Mode Activated! Focus only on scoring topics.")
+
+# 📊 PROGRESS
 progress = (30 - exam_days) / 30
 st.progress(progress)
 st.caption("📊 Exam urgency level")
 
-# ⚠️ WARNING
 if exam_days <= 3:
     st.warning("⚡ Last-minute preparation detected!")
 
 st.markdown("---")
 
-# 🧠 LOGIC
+# 🧠 STRATEGY
 def get_strategy(days, mode):
     if mode == "Last-Minute":
         return "Emergency Strategy"
@@ -71,7 +77,7 @@ def get_strategy(days, mode):
     else:
         return "Balanced Study"
 
-# 🧠 PROMPT
+# 🧠 PROMPT (UPDATED WITH REVISION PLAN)
 def generate_prompt():
     strategy = get_strategy(exam_days, mode)
 
@@ -90,6 +96,7 @@ Generate:
 2. Important topics
 3. Study tips
 4. Motivation
+5. Final Revision Strategy (important)
 """
 
 # 🧠 QUIZ PROMPT
@@ -103,13 +110,13 @@ Level: {level}
 Keep them exam-focused and concise.
 """
 
-# ⚡ CACHED RESPONSE
+# ⚡ CACHE
 @st.cache_data
 def get_ai_response(prompt):
     response = model.generate_content(prompt)
     return response.text
 
-# 🎯 MAIN BUTTON
+# 🎯 GENERATE PLAN
 if st.button("🚀 Generate Study Plan"):
 
     if not subject or len(subject) < 3:
@@ -127,11 +134,29 @@ if st.button("🚀 Generate Study Plan"):
                 st.success("✅ Study Plan Ready")
                 st.markdown(output)
 
+                # 🧠 SAVE HISTORY (NEW)
+                st.session_state.history.append({
+                    "subject": subject,
+                    "days": exam_days,
+                    "plan": output
+                })
+
+                # 🎯 WHY
                 st.markdown("### 🎯 Why This Works")
                 st.write("Focused, time-optimized, and AI-personalized.")
 
+                # 🤖 AI LOGIC
                 st.markdown("### 🤖 AI Logic")
                 st.write("Generated using Google Gemini AI with context-aware reasoning.")
+
+                # 💡 MOTIVATION QUOTES (NEW)
+                quotes = [
+                    "Consistency beats intensity.",
+                    "Focus on progress, not perfection.",
+                    "Small steps daily lead to big success.",
+                    "Discipline creates success."
+                ]
+                st.success(random.choice(quotes))
 
                 st.caption(f"⚡ Generated in {round(end-start,2)} sec")
 
@@ -140,7 +165,14 @@ if st.button("🚀 Generate Study Plan"):
             except:
                 st.error("Something went wrong")
 
-# 🧠 QUIZ FEATURE
+# 🧠 HISTORY DISPLAY (NEW)
+st.markdown("---")
+st.markdown("## 📜 Previous Plans")
+
+for item in st.session_state.history[-3:]:
+    st.write(f"📘 {item['subject']} - {item['days']} days")
+
+# 🧠 QUIZ
 st.markdown("---")
 st.markdown("## 🧠 Practice Questions")
 
@@ -161,7 +193,7 @@ if generate_quiz:
             except:
                 st.error("Error generating questions")
 
-# ⚡ EXTRA TIPS
+# ⚡ TIPS
 st.markdown("---")
 st.markdown("## ⚡ Study Tips")
 
