@@ -85,6 +85,23 @@ User Input → Strategy Engine → Prompt Generator → Gemini API → Response 
 
 ---
 
+## 🧪 Testing
+
+This project includes unit testing using pytest.
+
+Test coverage includes:
+- Strategy logic validation
+- Edge case handling
+- Mode-based behavior (Normal vs Last-Minute)
+
+To run tests:
+
+```bash
+pytest
+```
+
+---
+
 ## 🚀 Unique Value Proposition
 
 Unlike generic AI tools, this project:
