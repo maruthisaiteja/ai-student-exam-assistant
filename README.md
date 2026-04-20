@@ -41,6 +41,27 @@ This project provides:
 
 ---
 
+## 🎯 Problem Alignment
+
+Students often face challenges in exam preparation due to:
+
+- Lack of structured study planning
+- Inefficient time management
+- Difficulty identifying important topics
+
+### ✅ How This Solution Addresses It
+
+This project solves these problems by:
+
+- Generating personalized study plans based on time constraints
+- Using AI to prioritize high-impact topics
+- Adapting strategies dynamically (Normal vs Last-Minute)
+- Providing actionable, day-wise guidance
+
+The system transforms unstructured preparation into a clear and optimized study strategy.
+
+---
+
 ## 🧠 Key Features
 
 - 🎯 Personalized Study Plans  

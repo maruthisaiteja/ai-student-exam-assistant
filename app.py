@@ -22,7 +22,18 @@ st.markdown("""
 👉 Fill the details below and click *Generate Study Plan*
 """)
 
-st.write("Fill your details and get a personalized study plan!")
+st.markdown("""
+### 🎯 Problem
+
+Many students struggle with:
+- ❌ Lack of structured study plans  
+- ❌ Poor time management before exams  
+- ❌ Not knowing what topics to prioritize  
+
+### ✅ Solution
+
+This AI assistant analyzes your situation and generates a **personalized, time-optimized study plan** to help you focus on what matters most.
+""")
 st.info("⚡ Powered by Google Gemini AI for intelligent study planning")
 
 # 🧾 INPUT SECTION (UPGRADED UI)
@@ -139,7 +150,17 @@ if st.button("🚀 Generate Study Plan"):
                 # 📊 OUTPUT
                 st.success("✅ Your Personalized Study Plan")
                 st.markdown(output)
-                
+
+                st.markdown("### 🎯 Why This Plan Works")
+                st.write("""
+                This plan is designed to maximize your efficiency by:
+                - Prioritizing high-impact topics
+                - Adapting to your available time
+                - Aligning with your preparation level
+
+                It ensures you focus on what matters most for scoring better in exams.
+                """)
+
                 st.markdown("### 🤖 How AI Generated This Plan")
                 st.write("""
                 This plan is generated using Google Gemini AI by analyzing:
