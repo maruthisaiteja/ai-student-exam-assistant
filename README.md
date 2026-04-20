@@ -116,6 +116,20 @@ pytest
 
 ---
 
+## ⚡ Efficiency
+
+The application is optimized for performance:
+
+- Uses caching to avoid redundant API calls
+- Minimizes response latency
+- Optimized prompt design to reduce token usage
+- Lightweight Streamlit interface for fast loading
+- Tracks response generation time
+
+This ensures faster and resource-efficient execution.
+
+---
+
 ## 🚀 Unique Value Proposition
 
 Unlike generic AI tools, this project:

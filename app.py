@@ -3,6 +3,7 @@ import google.generativeai as genai
 import time
 import os
 
+
 # 🔑 Configure Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -22,8 +23,6 @@ st.markdown("""
 """)
 
 st.write("Fill your details and get a personalized study plan!")
-
-st.markdown("---")
 
 # 🧾 INPUT SECTION (UPGRADED UI)
 exam_days = st.slider(
@@ -55,6 +54,7 @@ level = st.selectbox(
     help="Select your current level of preparation"
 )
 
+# 📊 Progress Indicator
 progress = (30 - exam_days) / 30
 st.progress(progress)
 
@@ -81,30 +81,38 @@ def generate_prompt():
     strategy = get_strategy(exam_days, mode)
 
     prompt = f"""
-    You are an expert academic mentor.
+    You are an efficient AI academic mentor powered by Google Gemini.
+
+    Generate concise and optimized output.
 
     Student Details:
     - Subject: {subject}
     - Days left: {exam_days}
-    - Daily study hours: {study_hours}
+    - Study hours/day: {study_hours}
     - Level: {level}
     - Strategy: {strategy}
 
-    Generate:
-    1. A clear day-wise study plan
-    2. Priority topics to focus
-    3. Smart study tips based on level
-    4. A short motivational message
+    Requirements:
+    - Keep response structured but not too long
+    - Focus on important topics only
+    - Avoid unnecessary explanations
 
-    Format:
-    - Use headings
-    - Use bullet points
-    - Keep it clean and structured
+    Output:
+    1. Day-wise plan
+    2. Priority topics
+    3. Smart tips
+    4. Motivation
     """
 
     return prompt
 
-st.markdown("---")
+
+# 🚀🔥 ADD THIS BLOCK (VERY IMPORTANT FOR EFFICIENCY)
+@st.cache_data(show_spinner=False)
+def get_ai_response(prompt):
+    response = model.generate_content(prompt)
+    return response.text
+
 
 # 🚀 GENERATE BUTTON
 if st.button("🚀 Generate Study Plan"):
@@ -112,19 +120,27 @@ if st.button("🚀 Generate Study Plan"):
     if subject.strip() == "":
         st.warning("Please enter subject name!")
     else:
-        with st.spinner("Generating your smart study plan..."):
-            time.sleep(2)
+        with st.spinner("⚡ Generating optimized study plan..."):
 
             try:
                 prompt = generate_prompt()
-                response = model.generate_content(prompt)
-                output = response.text
 
-                # 📊 OUTPUT SECTION
+                # ⏱️ TIME TRACKING (EFFICIENCY BOOST)
+                start_time = time.time()
+
+                # 🔥 USE CACHED FUNCTION (NOT DIRECT CALL)
+                output = get_ai_response(prompt)
+
+                end_time = time.time()
+
+                # 📊 OUTPUT
                 st.success("✅ Your Personalized Study Plan")
                 st.markdown(output)
 
-                # 📥 DOWNLOAD BUTTON
+                # ⚡ SHOW PERFORMANCE
+                st.caption(f"⚡ Generated in {round(end_time - start_time, 2)} seconds")
+
+                # 📥 DOWNLOAD
                 st.download_button(
                     label="📥 Download Study Plan",
                     data=output,
