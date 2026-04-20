@@ -126,6 +126,20 @@ def generate_prompt():
 
     return prompt
 
+def generate_quiz_prompt():
+    return f"""
+    You are an AI tutor powered by Google Gemini.
+
+    Generate 5 important practice questions for:
+    Subject: {subject}
+    Level: {level}
+
+    Requirements:
+    - Questions should be exam-focused
+    - Mix of conceptual and problem-solving
+    - Keep them clear and concise
+    """
+
 
 # 🚀🔥 ADD THIS BLOCK (VERY IMPORTANT FOR EFFICIENCY)
 @st.cache_data(show_spinner=False)
@@ -193,9 +207,32 @@ if st.button("🚀 Generate Study Plan"):
             except Exception as e:
                 st.error("⚠️ Unable to generate study plan. Please try again later.")
 
+if generate_quiz:
+
+    if subject.strip() == "":
+        st.warning("Please enter subject name first!")
+    else:
+        with st.spinner("🧠 Generating practice questions..."):
+            try:
+                quiz_prompt = generate_quiz_prompt()
+                quiz_output = get_ai_response(quiz_prompt)
+
+                st.markdown("### 📝 Practice Questions")
+                st.info("💡 Practice these questions to test your understanding")
+                st.markdown(quiz_output)
+
+            except Exception:
+                st.error("⚠️ Unable to generate questions. Please try again.")
+
+
 # ⚡ EXTRA SECTION
 st.markdown("---")
 st.markdown("## ⚡ Quick Study Tips")
+
+st.markdown("---")
+st.markdown("## 🧠 Practice Questions")
+
+generate_quiz = st.button("📝 Generate Practice Questions")
 
 st.write("""
 - Use Pomodoro technique (25 min focus + 5 min break)
