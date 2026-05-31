@@ -1,241 +1,217 @@
 import streamlit as st
-import google.generativeai as genai
+from dotenv import load_dotenv
 import os
-import time
-import random
+from utils.gemini_helper import initialize_gemini, generate_summary, generate_key_points, generate_questions, generate_quiz
+from utils.document_processor import extract_text_from_file
 
-# 🔐 API CONFIG
-api_key = os.getenv("GEMINI_API_KEY")
+# Load environment variables
+load_dotenv()
 
-if not api_key:
-    st.error("⚠️ API key not found. Please configure it in Streamlit secrets.")
+# Setup Page Config
+st.set_page_config(page_title="AI Study Assistant", page_icon="🎓", layout="wide")
+
+# Custom CSS for modern UI
+st.markdown("""
+<style>
+    /* Main container styling */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    /* Style for buttons to look more premium */
+    div.stButton > button:first-child {
+        background-color: #4a90e2;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #357abd;
+        box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    div.stDownloadButton > button:first-child {
+        background-color: #2ecc71;
+        color: white;
+        border-radius: 8px;
+        border: none;
+    }
+    div.stDownloadButton > button:first-child:hover {
+        background-color: #27ae60;
+    }
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        padding: 10px 20px;
+        background-color: transparent;
+        border-radius: 8px 8px 0 0;
+        border-bottom: 3px solid transparent;
+    }
+    .stTabs [aria-selected="true"] {
+        border-bottom: 3px solid #4a90e2;
+        color: #4a90e2 !important;
+        font-weight: 600;
+    }
+    /* Title styling */
+    h1 {
+        background: -webkit-linear-gradient(45deg, #4a90e2, #9013fe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Session State Initialization
+if "extracted_text" not in st.session_state:
+    st.session_state.extracted_text = ""
+if "summary" not in st.session_state:
+    st.session_state.summary = ""
+if "key_points" not in st.session_state:
+    st.session_state.key_points = ""
+if "questions" not in st.session_state:
+    st.session_state.questions = ""
+if "quiz" not in st.session_state:
+    st.session_state.quiz = ""
+
+# Sidebar for Input
+with st.sidebar:
+    st.header("⚙️ Configuration")
+    api_key_input = st.text_input("Gemini API Key (Optional if in .env)", type="password", help="Get your API key from Google AI Studio")
+    if api_key_input:
+        os.environ["GEMINI_API_KEY"] = api_key_input
+        
+    st.divider()
+    
+    st.header("📄 Input Source")
+    input_method = st.radio("Choose Input Method:", ["Text Input", "File Upload"])
+    
+    if input_method == "Text Input":
+        raw_text = st.text_area("Paste your notes here:", height=250, placeholder="Enter the text you want to study...")
+        if st.button("Process Text", use_container_width=True):
+            if raw_text.strip():
+                st.session_state.extracted_text = raw_text
+                st.success("Text loaded successfully!")
+            else:
+                st.warning("Please enter some text.")
+                
+    else:
+        uploaded_file = st.file_uploader("Upload Document", type=['pdf', 'txt'], help="Upload PDF or TXT files")
+        if st.button("Process File", use_container_width=True):
+            if uploaded_file is not None:
+                try:
+                    with st.spinner("Extracting text from file..."):
+                        text = extract_text_from_file(uploaded_file)
+                        if text.strip():
+                            st.session_state.extracted_text = text
+                            st.success("File processed successfully!")
+                        else:
+                            st.warning("No text found in the file.")
+                except Exception as e:
+                    st.error(f"Error processing file: {str(e)}")
+            else:
+                st.warning("Please upload a file first.")
+                
+    st.divider()
+    st.caption("🚀 Built for Hackathons & Fast Learning")
+
+# Main content
+st.title("🎓 AI Student Exam Assistant")
+st.markdown("### Transform your study materials into actionable insights.")
+
+if not initialize_gemini():
+    st.error("⚠️ Please configure your Google Gemini API key in the sidebar or via the `.env` file.")
+    st.info("You can get a free API key from [Google AI Studio](https://aistudio.google.com/).")
     st.stop()
 
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemini-flash-latest")
+if st.session_state.extracted_text:
+    with st.expander("🔍 Preview Extracted Text", expanded=False):
+        preview = st.session_state.extracted_text[:1500] + ("..." if len(st.session_state.extracted_text) > 1500 else "")
+        st.text(preview)
 
-# 🎨 PAGE CONFIG
-st.set_page_config(page_title="AI Exam Assistant", layout="centered")
+    st.markdown("### ⚡ AI Processing")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("📝 Generate Summary", use_container_width=True):
+            with st.spinner("Analyzing and summarizing..."):
+                try:
+                    st.session_state.summary = generate_summary(st.session_state.extracted_text)
+                except Exception as e:
+                    st.error(str(e))
+                    
+    with col2:
+        if st.button("💡 Extract Key Points", use_container_width=True):
+            with st.spinner("Extracting critical information..."):
+                try:
+                    st.session_state.key_points = generate_key_points(st.session_state.extracted_text)
+                except Exception as e:
+                    st.error(str(e))
+                    
+    with col3:
+        if st.button("❓ Generate Questions", use_container_width=True):
+            with st.spinner("Formulating exam questions..."):
+                try:
+                    st.session_state.questions = generate_questions(st.session_state.extracted_text)
+                except Exception as e:
+                    st.error(str(e))
+                    
+    with col4:
+        if st.button("🎯 Create Quiz", use_container_width=True):
+            with st.spinner("Designing multiple-choice quiz..."):
+                try:
+                    st.session_state.quiz = generate_quiz(st.session_state.extracted_text)
+                except Exception as e:
+                    st.error(str(e))
 
-# 🧠 SESSION MEMORY (NEW)
-if "history" not in st.session_state:
-    st.session_state.history = []
+    st.divider()
 
-# 🌟 HEADER
-st.markdown("""
-# 🎯 AI Student Exam Assistant  
-### 🚀 Plan smarter. Study better. Score higher.
-
-💡 Powered by **Google Gemini AI**
-""")
-
-st.info("⚡ AI-powered personalized study planning")
-
-# 🎯 PROBLEM + SOLUTION
-st.markdown("""
-### 🎯 Problem
-Students struggle with:
-- Lack of planning  
-- Poor time management  
-- Confusion about important topics  
-
-### ✅ Solution
-This AI tool creates **personalized study strategies** based on your time, level, and subject.
-""")
-
-st.markdown("---")
-
-# 🧾 INPUT
-exam_days = st.slider("📅 Days left for exam", 1, 30, 5)
-study_hours = st.slider("⏳ Study hours/day", 1, 12, 4)
-subject = st.text_input("📘 Subject Name")
-mode = st.radio("🎯 Study Mode", ["Normal", "Last-Minute"])
-level = st.selectbox("📊 Preparation Level", ["Beginner", "Intermediate", "Advanced"])
-
-# 🚨 EMERGENCY MODE UI (NEW)
-if mode == "Last-Minute":
-    st.error("🚨 Emergency Mode Activated! Focus only on scoring topics.")
-
-# 📊 PROGRESS
-progress = (30 - exam_days) / 30
-st.progress(progress)
-st.caption("📊 Exam urgency level")
-
-if exam_days <= 3:
-    st.warning("⚡ Last-minute preparation detected!")
-
-st.markdown("---")
-
-# 🧠 STRATEGY
-def get_strategy(days, mode):
-    if mode == "Last-Minute":
-        return "Emergency Strategy"
-    elif days <= 3:
-        return "Crash Preparation"
-    elif days <= 7:
-        return "Focused Revision"
-    else:
-        return "Balanced Study"
-
-# 🧠 PROMPT (UPDATED WITH REVISION PLAN)
-def generate_prompt():
-    strategy = get_strategy(exam_days, mode)
-
-    return f"""
-You are an AI academic mentor powered by Google Gemini.
-
-Student:
-Subject: {subject}
-Days Left: {exam_days}
-Study Hours: {study_hours}
-Level: {level}
-Strategy: {strategy}
-
-Generate:
-1. Day-wise plan
-2. Important topics
-3. Study tips
-4. Motivation
-5. Final Revision Strategy (important)
-"""
-
-# 🧠 QUIZ PROMPT
-def generate_quiz_prompt():
-    return f"""
-Generate 5 important exam questions for:
-
-Subject: {subject}
-Level: {level}
-
-Keep them exam-focused and concise.
-"""
-
-def analyze_student():
-    analysis_prompt = f"""
-    Analyze this student's exam situation:
-
-    Subject: {subject}
-    Days Left: {exam_days}
-    Study Hours: {study_hours}
-    Level: {level}
-
-    Give:
-    - Difficulty Level (Easy/Medium/Hard)
-    - Urgency Level (Low/Moderate/High)
-    - Risk Level (Low/Medium/High)
-    - Recommended Strategy
-    """
-
-    return get_ai_response(analysis_prompt)
-
-
-# ⚡ CACHE
-@st.cache_data
-def get_ai_response(prompt):
-    response = model.generate_content(prompt)
-    return response.text
-
-# 🎯 GENERATE PLAN
-if st.button("🚀 Generate Study Plan"):
-
-    if not subject or len(subject) < 3:
-        st.warning("Enter valid subject name")
-    else:
-        with st.spinner("⚡ Generating plan..."):
-            try:
-                start = time.time()
-
-                # 🔥 STEP 1: AI ANALYSIS
-                analysis = analyze_student()
-
-                st.markdown("### 📊 AI Analysis")
-                st.markdown(analysis)
-
-                # 🔥 RISK VISUAL FEEDBACK
-                if "High" in analysis:
-                    st.error("⚠️ High Risk Detected - Focus Required")
-                elif "Medium" in analysis:
-                    st.warning("⚡ Moderate Risk - Stay Consistent")
-                else:
-                    st.success("✅ Low Risk - You're on track!")
-
-                # 🔥 STEP 2: GENERATE PLAN
-                prompt = generate_prompt() + f"\n\nUse this analysis:\n{analysis}"
-                output = get_ai_response(prompt)
-
-                end = time.time()
-
-                st.success("✅ Study Plan Ready")
-                st.markdown(output)
-                st.markdown("### 🚀 AI Insight")
-                st.write("This plan is dynamically optimized using multi-step AI reasoning.")
-
-                # 🧠 SAVE HISTORY (NEW)
-                st.session_state.history.append({
-                    "subject": subject,
-                    "days": exam_days,
-                    "plan": output
-                })
-
-                # 🎯 WHY
-                st.markdown("### 🎯 Why This Works")
-                st.write("Focused, time-optimized, and AI-personalized.")
-
-                # 🤖 AI LOGIC
-                st.markdown("### 🤖 AI Logic")
-                st.write("Generated using Google Gemini AI with context-aware reasoning.")
-
-                # 💡 MOTIVATION QUOTES (NEW)
-                quotes = [
-                    "Consistency beats intensity.",
-                    "Focus on progress, not perfection.",
-                    "Small steps daily lead to big success.",
-                    "Discipline creates success."
-                ]
-                st.success(random.choice(quotes))
-
-                st.caption(f"⚡ Generated in {round(end-start,2)} sec")
-
-                st.download_button("📥 Download Plan", output)
-
-            except:
-                st.error("Something went wrong")
-
-# 🧠 HISTORY DISPLAY (NEW)
-st.markdown("---")
-st.markdown("## 📜 Previous Plans")
-
-for item in st.session_state.history[-3:]:
-    st.write(f"📘 {item['subject']} - {item['days']} days")
-
-# 🧠 QUIZ
-st.markdown("---")
-st.markdown("## 🧠 Practice Questions")
-
-generate_quiz = st.button("📝 Generate Questions")
-
-if generate_quiz:
-    if not subject:
-        st.warning("Enter subject first")
-    else:
-        with st.spinner("Generating questions..."):
-            try:
-                quiz_prompt = generate_quiz_prompt()
-                quiz_output = get_ai_response(quiz_prompt)
-
-                st.info("💡 Practice these questions")
-                st.markdown(quiz_output)
-
-            except:
-                st.error("Error generating questions")
-
-# ⚡ TIPS
-st.markdown("---")
-st.markdown("## ⚡ Study Tips")
-
-st.write("""
-- Use Pomodoro technique  
-- Revise before sleeping  
-- Solve previous papers  
-- Avoid distractions  
-""")
+    # Tabs for Output
+    tab1, tab2, tab3, tab4 = st.tabs(["📝 Summary", "💡 Key Points", "❓ Questions", "🎯 Quiz"])
+    
+    with tab1:
+        if st.session_state.summary:
+            st.markdown(st.session_state.summary)
+            st.download_button("📥 Download Summary (.txt)", st.session_state.summary, "summary.txt", key="dl_summary")
+        else:
+            st.info("Click 'Generate Summary' to see results here.")
+            
+    with tab2:
+        if st.session_state.key_points:
+            st.markdown(st.session_state.key_points)
+            st.download_button("📥 Download Key Points (.txt)", st.session_state.key_points, "key_points.txt", key="dl_kp")
+        else:
+            st.info("Click 'Extract Key Points' to see results here.")
+            
+    with tab3:
+        if st.session_state.questions:
+            st.markdown(st.session_state.questions)
+            st.download_button("📥 Download Questions (.txt)", st.session_state.questions, "questions.txt", key="dl_q")
+        else:
+            st.info("Click 'Generate Questions' to see results here.")
+            
+    with tab4:
+        if st.session_state.quiz:
+            st.markdown(st.session_state.quiz)
+            st.download_button("📥 Download Quiz (.txt)", st.session_state.quiz, "quiz.txt", key="dl_quiz")
+        else:
+            st.info("Click 'Create Quiz' to see results here.")
+else:
+    st.info("👈 Please **paste text** or **upload a document** in the sidebar to begin your study session!")
+    
+    # Placeholder landing page UI
+    st.markdown("---")
+    st.markdown("### 🌟 Features")
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown("**📚 Document Support**\nUpload PDF or TXT files effortlessly.")
+    with col_f2:
+        st.markdown("**🧠 Gemini Powered**\nUtilizing Google's Gemini 1.5 Flash for lightning fast analysis.")
+    with col_f3:
+        st.markdown("**🎯 Exam Ready**\nGenerate summaries, questions, and quizzes instantly.")

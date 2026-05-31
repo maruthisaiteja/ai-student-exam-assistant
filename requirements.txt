@@ -1,3 +1,5 @@
 streamlit
 google-generativeai
 pytest
+python-dotenv
+PyPDF2
